@@ -1,0 +1,6 @@
+[package]
+name = "b226"
+version = "0.1.0"
+authors = ["Xiangmin Liu <635750556@qq.com>"]
+
+[dependencies]
