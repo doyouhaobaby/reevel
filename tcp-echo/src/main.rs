@@ -16,8 +16,8 @@ fn handle_client(mut stream: TcpStream) -> Result<(), Error> {
 }
 
 fn main() {
-    // nc 127.0.0.1 8888
-    let listener = TcpListener::bind("0.0.0.0:8888").
+    // nc 127.0.0.1 9333
+    let listener = TcpListener::bind("0.0.0.0:9333").
         expect("Cound not bind");
 
     for stream in listener.incoming() {
