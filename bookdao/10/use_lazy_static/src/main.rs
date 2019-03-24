@@ -1,5 +1,6 @@
 use regex::Regex;
-#[macro_use] extern crate lazy_static;
+#[macro_use]
+extern crate lazy_static;
 
 lazy_static! {
     static ref RE: Regex = Regex::new(r"(?x)
