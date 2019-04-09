@@ -1,5 +1,6 @@
 // extern crate actix_web;
 // extern crate listenfd;
+#![feature(custom_attribute)]
 extern crate serde;
 extern crate serde_json;
 #[macro_use]
@@ -14,6 +15,8 @@ use std::sync::Arc;
 use bytes::Bytes;
 use futures::stream::once;
 use futures::future::{Future, result};
+use std::io;
+use failure::Fail;
 
 struct AppState {
     counter: Cell<usize>,
@@ -132,6 +135,22 @@ fn path_and_query((path, query): (Path<(u32, String)>, Query<QueryInfo>)) -> Str
     format!("Welcome {} {} {}", query.username, path.0, path.1)
 }
 
+fn my_test_error(_req: &HttpRequest<AppState>) -> io::Result<fs::NamedFile> {
+    Ok(fs::NamedFile::open("static/notFound.html")?)
+}
+
+#[derive(Fail, Debug)]
+#[fail(display="my error")]
+struct MyError {
+    name: &'static str,
+}
+
+impl error::ResponseError for MyError {}
+
+fn my_test_error2(_req: &HttpRequest<AppState>) -> Result<&'static str, MyError> {
+    Err(MyError{name: "test"})
+}
+
 fn main() {
     let inc_cloned = Arc::new(AtomicUsize::new(0));
 
@@ -155,6 +174,8 @@ fn main() {
             .resource("/form-test", |r| r.method(http::Method::GET).with(query_test))
             //http://127.0.0.1:9888/helloquery/444/xxxxx?username=xxx
             .resource("/helloquery/{userid}/{friend}", |r| r.method(http::Method::GET).with(path_and_query))
+            .resource("/my-error-test", |r| r.f(my_test_error))
+            .resource("/my-error-test2", |r| r.f(my_test_error2))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
